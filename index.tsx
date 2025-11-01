@@ -10,21 +10,20 @@ const App = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    // FIX: Correctly handle FileReader.result typing and ensure the promise resolves to a string.
-    // This resolves two issues:
-    // 1. `reader.result` is typed as `string | ArrayBuffer | null`, so we need a type check before calling `.split()`.
-    // 2. The promise from `new Promise` was untyped, causing `base64EncodedData` to be of type `unknown`, which led to a type error in `ai.models.generateContent`.
-    //    By typing `new Promise<string>`, we ensure `base64EncodedData` is correctly typed as `string`.
-    const fileToGenerativePart = async (file) => {
-        const base64EncodedData = await new Promise<string>((resolve) => {
+    // FIX: Specify the Promise return type as string and type the file parameter to fix the TypeScript error.
+    const fileToGenerativePart = async (file: File) => {
+        const base64EncodedData = await new Promise<string>((resolve, reject) => {
             const reader = new FileReader();
-            reader.onloadend = () => {
+            reader.onload = () => {
                 if (typeof reader.result === 'string') {
+                    // reader.result is the full data URL, e.g., "data:image/jpeg;base64,LzlqLz...".
+                    // We only need the base64 part after the comma.
                     resolve(reader.result.split(',')[1]);
                 } else {
-                    resolve('');
+                    resolve(''); 
                 }
             };
+            reader.onerror = (error) => reject(error);
             reader.readAsDataURL(file);
         });
         return {
@@ -32,8 +31,9 @@ const App = () => {
         };
     };
 
-    const handleImageUpload = useCallback((e, setImage) => {
-        const file = e.target.files[0];
+    const handleImageUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>, setImage) => {
+        // FIX: Use optional chaining for safer file access.
+        const file = e.target.files?.[0];
         if (file) {
             const reader = new FileReader();
             reader.onloadend = () => {

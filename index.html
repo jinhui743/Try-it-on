@@ -262,6 +262,15 @@
 </head>
 <body>
   <div id="root"></div>
+  <script>
+    // Polyfill 'process' for browser environments to prevent runtime errors.
+    // The Gemini API key is expected to be in process.env.API_KEY.
+    // In a non-Node.js environment like a static webpage, this ensures the code doesn't crash.
+    // The API call will fail gracefully if the key isn't provided by the execution environment.
+    if (typeof process === 'undefined') {
+      window.process = { env: {} };
+    }
+  </script>
   <script type="text/babel" data-type="module" src="index.tsx"></script>
 </body>
 </html>
