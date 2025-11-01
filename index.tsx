@@ -1,4 +1,5 @@
 
+
 import React, { useState, useCallback } from 'react';
 import { createRoot } from 'react-dom/client';
 import { GoogleGenAI, Modality } from "@google/genai";
@@ -10,17 +11,15 @@ const App = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    // FIX: Specify the Promise return type as string and type the file parameter to fix the TypeScript error.
+    // Fix: Explicitly type the promise to resolve with a string and the file parameter as File.
     const fileToGenerativePart = async (file: File) => {
         const base64EncodedData = await new Promise<string>((resolve, reject) => {
             const reader = new FileReader();
-            reader.onload = () => {
+            reader.onloadend = () => {
                 if (typeof reader.result === 'string') {
-                    // reader.result is the full data URL, e.g., "data:image/jpeg;base64,LzlqLz...".
-                    // We only need the base64 part after the comma.
                     resolve(reader.result.split(',')[1]);
                 } else {
-                    resolve(''); 
+                    resolve('');
                 }
             };
             reader.onerror = (error) => reject(error);
@@ -31,8 +30,7 @@ const App = () => {
         };
     };
 
-    const handleImageUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>, setImage) => {
-        // FIX: Use optional chaining for safer file access.
+    const handleImageUpload = useCallback((e, setImage) => {
         const file = e.target.files?.[0];
         if (file) {
             const reader = new FileReader();
@@ -89,7 +87,11 @@ const App = () => {
 
         } catch (err) {
             console.error(err);
-            setError(err.message || "An unexpected error occurred. Please try again.");
+            if (err.message && err.message.includes("API Key")) {
+                setError("API Key not found. Please ensure the hosting environment is configured with a valid Gemini API Key.");
+            } else {
+                setError(err.message || "An unexpected error occurred. Please try again.");
+            }
         } finally {
             setIsLoading(false);
         }
