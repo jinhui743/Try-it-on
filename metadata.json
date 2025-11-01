@@ -1,0 +1,5 @@
+{
+  "description": "A virtual try-on application that uses Gemini to show how clothing and accessories would look on a person.",
+  "requestFramePermissions": [],
+  "name": "App"
+}
