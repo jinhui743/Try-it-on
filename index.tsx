@@ -1,20 +1,30 @@
+
 import React, { useState, useCallback } from 'react';
 import { createRoot } from 'react-dom/client';
 import { GoogleGenAI, Modality } from "@google/genai";
 
 const App = () => {
-    const [personImage, setPersonImage] = useState(null); // { file: File, url: string }
-    const [itemImage, setItemImage] = useState(null); // { file: File, url: string }
+    const [personImage, setPersonImage] = useState(null);
+    const [itemImage, setItemImage] = useState(null);
     const [editedImage, setEditedImage] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    // Fix for errors on line 16 and 55: Explicitly type the Promise to resolve with a string and cast reader.result to string before splitting.
-    // This resolves the error on line 16 and the subsequent type error on line 55.
+    // FIX: Correctly handle FileReader.result typing and ensure the promise resolves to a string.
+    // This resolves two issues:
+    // 1. `reader.result` is typed as `string | ArrayBuffer | null`, so we need a type check before calling `.split()`.
+    // 2. The promise from `new Promise` was untyped, causing `base64EncodedData` to be of type `unknown`, which led to a type error in `ai.models.generateContent`.
+    //    By typing `new Promise<string>`, we ensure `base64EncodedData` is correctly typed as `string`.
     const fileToGenerativePart = async (file) => {
         const base64EncodedData = await new Promise<string>((resolve) => {
             const reader = new FileReader();
-            reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
+            reader.onloadend = () => {
+                if (typeof reader.result === 'string') {
+                    resolve(reader.result.split(',')[1]);
+                } else {
+                    resolve('');
+                }
+            };
             reader.readAsDataURL(file);
         });
         return {
@@ -29,8 +39,7 @@ const App = () => {
             reader.onloadend = () => {
                 setImage({
                     file: file,
-                    // Fix: Cast reader.result to string to ensure type safety for the image URL.
-                    url: reader.result as string,
+                    url: reader.result,
                 });
                 setEditedImage(null);
                 setError(null);
