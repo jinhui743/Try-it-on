@@ -54,7 +54,7 @@ const App = () => {
         setEditedImage(null);
 
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+            const ai = new GoogleGenAI({ apiKey: AIzaSyCdbUCs2r9kL1tvYFQvokvTEs24WXXHGrI });
             const personImagePart = await fileToGenerativePart(personImage.file);
             const itemImagePart = await fileToGenerativePart(itemImage.file);
             const prompt = "Generate a new image showing the person from the first image realistically wearing the clothing item from the second image. The final image should only contain the person with the new clothing, on a clean or simple background. Do not include the original clothing or multiple versions of the person.";
