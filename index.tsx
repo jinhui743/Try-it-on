@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback } from 'react';
 import { createRoot } from 'react-dom/client';
 import { GoogleGenAI, Modality } from "@google/genai";
@@ -9,8 +10,9 @@ const App = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    const fileToGenerativePart = async (file) => {
-        const base64EncodedData = await new Promise((resolve) => {
+    // FIX: Typed the `file` parameter and the Promise's resolved value to ensure `base64EncodedData` is a string, resolving the type error on line 54.
+    const fileToGenerativePart = async (file: File) => {
+        const base64EncodedData = await new Promise<string>((resolve) => {
             const reader = new FileReader();
             reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
             reader.readAsDataURL(file);
